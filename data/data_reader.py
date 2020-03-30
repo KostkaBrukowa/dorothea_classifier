@@ -3,11 +3,11 @@ from compound.compound import Compound
 
 
 class DataReader:
-    train_file = '/data_set/dorothea_train.data'
-    train_labels_file = '/data_set/dorothea_train.labels'
-    valid_file = '/data_set/dorothea_valid.data'
-    valid_labels_file = '/data_set/dorothea_valid.labels'
-    test_file = '/data_set/dorothea_test.data'
+    train_file = './data/data_set/dorothea_train.data'
+    train_labels_file = './data/data_set/dorothea_train.labels'
+    valid_file = './data/data_set/dorothea_valid.data'
+    valid_labels_file = './data/data_set/dorothea_valid.labels'
+    test_file = './data/data_set/dorothea_test.data'
 
     def _convert_active(self, label: int) -> int:
         if label == 1:
@@ -21,7 +21,7 @@ class DataReader:
         labels = []
 
         with open(labels_file, 'r') as reader:
-            for line in reader.readlines:
+            for line in reader.readlines():
                 labels.append(int(line))
 
         return labels
@@ -31,7 +31,7 @@ class DataReader:
 
         with open(data_file, 'r') as reader:
             index = 0
-            for line in reader.readlines:
+            for line in reader.readlines():
                 features = set(line.split())
                 active = self._convert_active(
                     labels[index]) if labels is not None else None
