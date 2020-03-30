@@ -30,14 +30,12 @@ class DataReader:
         compounds = []
 
         with open(data_file, 'r') as reader:
-            index = 0
-            for line in reader.readlines():
-                features = set(line.split())
+            for line in enumerate(reader.readlines()):
+                features = set(line[1].split())
                 active = self._convert_active(
-                    labels[index]) if labels is not None else None
-                new_compound = Compound(index, active, features)
+                    labels[line[0]]) if labels is not None else None
+                new_compound = Compound(line[0], active, features)
                 compounds.append(new_compound)
-                index += 1
 
         return compounds
 
@@ -46,14 +44,14 @@ class DataReader:
 
         return self._read_data(file_data, labels)
 
-    def read_train_data(self):
+    def read_train_data(self) -> List[Compound]:
 
         return self._read_full_set(self.train_labels_file, self.train_file)
 
-    def read_valid_data(self):
+    def read_valid_data(self) -> List[Compound]:
 
         return self._read_full_set(self.valid_labels_file, self.valid_file)
 
-    def read_test_data(self):
+    def read_test_data(self) -> List[Compound]:
 
         return self._read_data(self.test_file)
