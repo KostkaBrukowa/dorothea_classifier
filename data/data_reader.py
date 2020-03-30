@@ -30,11 +30,11 @@ class DataReader:
         compounds = []
 
         with open(data_file, 'r') as reader:
-            for line in enumerate(reader.readlines()):
-                features = set(line[1].split())
+            for index, line in enumerate(reader.readlines()):
+                features = set(line.split())
                 active = self._convert_active(
-                    labels[line[0]]) if labels is not None else None
-                new_compound = Compound(line[0], active, features)
+                    labels[index]) if labels is not None else None
+                new_compound = Compound(index, active, features)
                 compounds.append(new_compound)
 
         return compounds
