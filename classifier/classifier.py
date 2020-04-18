@@ -2,12 +2,12 @@ from typing import List, Tuple
 
 import numpy as np
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import precision_recall_curve, roc_auc_score
-from sklearn.metrics import plot_precision_recall_curve
-import matplotlib.pyplot as plt
+from sklearn.metrics import roc_auc_score
 from sklearn.metrics import confusion_matrix, average_precision_score
 
 from compound.compound import Compound
+
+TestTrainSplit = Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
 
 
 class Classifier:
@@ -61,8 +61,7 @@ class Classifier:
         self.classifier.fit(x_train, y_train)
 
     def _train_validation_split(self, available_features: List[int], train_compounds: List[Compound] = None,
-                                validation_compounds: List[Compound] = None) -> Tuple[
-        np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+                                validation_compounds: List[Compound] = None) -> TestTrainSplit:
         train = train_compounds if train_compounds is not None else self.train_compounds
         validation = validation_compounds if validation_compounds is not None else self.validation_compounds
 
