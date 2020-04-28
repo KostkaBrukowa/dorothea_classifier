@@ -31,7 +31,7 @@ class DataReader:
 
         with open(data_file, 'r') as reader:
             for index, line in enumerate(reader.readlines()):
-                features = set(line.split())
+                features = set(map(int, line.split()))
                 active = self._convert_active(
                     labels[index]) if labels is not None else None
                 new_compound = Compound(index, active, features)
