@@ -5,17 +5,30 @@ import random
 import itertools
 from enum import Enum
 
+from selection.ranking_selection import ranking_selection
+from selection.roulette_selection import roulette_selection
+from selection.tournament_selection import tournament_selection
+
 Population = List[np.ndarray]
 PopulationWithFitness = List[Tuple[float, np.ndarray]]
 
 
 class SelectionAlgorithm(Enum):
-    foo = 1
+    Ranking = 1
+    Roulette = 2
+    Tournament = 3
 
 
 class FitnessFunction(Enum):
     AveragePrecision = 1
     ROCCurve = 2
+
+
+SelectionAlgorithmDictionary = {
+    SelectionAlgorithm.Ranking: ranking_selection,
+    SelectionAlgorithm.Roulette: roulette_selection,
+    SelectionAlgorithm.Tournament: tournament_selection
+}
 
 
 def random_features_indices(indices_count: int):
@@ -41,8 +54,8 @@ class Algorithm:
     def __init__(self, classifier, *, population_size=10, min_attributes_count=10,
                  initial_attributes_standard_deviation=1, individuals_to_mutate_coefficient=0.015,
                  chromosomes_to_mutate_coefficient=0.005, cycles_count=2, loci_count=2,
-                 fitness_function=FitnessFunction.AveragePrecision, selection_algorithm=SelectionAlgorithm.foo):
-        self.selection_algorithm = selection_algorithm
+                 fitness_function=FitnessFunction.AveragePrecision, selection_algorithm=SelectionAlgorithm.Roulette):
+        self.selection_algorithm = SelectionAlgorithmDictionary[selection_algorithm]
         self.loci_count = loci_count if loci_count % 2 == 0 else loci_count + 1
         self.cycles_count = cycles_count
         self.chromosomes_to_mutate_coefficient = chromosomes_to_mutate_coefficient
@@ -56,7 +69,8 @@ class Algorithm:
                                  else self.classifier.calculate_area_under_roc)
 
     def _generate_single_individual(self) -> np.ndarray:
-        features_count = int(np.random.normal(self.min_attributes_count, self.initial_attributes_standard_deviation, 1))
+        features_count = int(np.random.normal(
+            self.min_attributes_count, self.initial_attributes_standard_deviation, 1))
         features = set(random_features_indices(features_count))
 
         return binary_representation_of_features(features)
@@ -81,7 +95,8 @@ class Algorithm:
         # [(0,1), (2, 3), (4, 5)...]
         consecutive_pairs = ((even, odd) for even, odd in
                              zip(range(0, self.loci_count, 2), range(1, self.loci_count, 2)))
-        parts = [(mother_parts[even], father_parts[odd]) for even, odd in consecutive_pairs]
+        parts = [(mother_parts[even], father_parts[odd])
+                 for even, odd in consecutive_pairs]
 
         return np.concatenate(list(itertools.chain(*parts)))
 

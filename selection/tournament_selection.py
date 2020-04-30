@@ -1,17 +1,8 @@
-from geneticalgorythm.algorithm import PopulationWithFitness
 from typing import List, Tuple
 from random import randrange, random
+import numpy as np
 
-
-def tournament_selection(populationWithFitness: PopulationWithFitness, pair_number: int, win_probabilty: float) -> List[Tuple[int, int]]:
-    population_size = len(populationWithFitness)
-    pairs = []
-    for i in range(pair_number):
-        mother, father = (_tournament_select_one(populationWithFitness, win_probabilty, population_size),
-                          _tournament_select_one(populationWithFitness, win_probabilty, population_size))
-        pairs.append((mother, father))
-
-    return pairs
+PopulationWithFitness = List[Tuple[float, np.ndarray]]
 
 
 def _tournament_select_one(populationWithFitness: PopulationWithFitness, win_probabilty: float, size: int) -> int:
@@ -24,3 +15,14 @@ def _tournament_select_one(populationWithFitness: PopulationWithFitness, win_pro
         return populationWithFitness.index(better)
     else:
         return populationWithFitness.index(worse)
+
+
+def tournament_selection(populationWithFitness: PopulationWithFitness, pair_number: int, win_probabilty: float) -> List[Tuple[int, int]]:
+    population_size = len(populationWithFitness)
+    pairs = []
+    for i in range(pair_number):
+        mother, father = (_tournament_select_one(populationWithFitness, win_probabilty, population_size),
+                          _tournament_select_one(populationWithFitness, win_probabilty, population_size))
+        pairs.append((mother, father))
+
+    return pairs
