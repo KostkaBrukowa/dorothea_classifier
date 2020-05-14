@@ -5,21 +5,18 @@ import numpy as np
 PopulationWithFitness = List[Tuple[float, np.ndarray]]
 
 
-def _roulette_select_one(populationWithFitness: PopulationWithFitness, fitness_sum: float) -> int:
+def _roulette_select_one(population_with_fitness: PopulationWithFitness, fitness_sum: float) -> int:
     lucky_number = uniform(0, fitness_sum)
-    loterry_sum = 0
-    for individual in populationWithFitness:
-        loterry_sum += individual[0]
-        if lucky_number <= loterry_sum:
-            return populationWithFitness.index(individual)
+    lottery_sum = 0
+    for individual in population_with_fitness:
+        lottery_sum += individual[0]
+        if lucky_number <= lottery_sum:
+            return population_with_fitness.index(individual)
 
 
-def roulette_selection(populationWithFitness: PopulationWithFitness, pair_number: int) -> List[Tuple[int, int]]:
-    fitness_sum = sum(invidual[0] for invidual in populationWithFitness)
-    pairs = []
-    for i in range(pair_number):
-        mother, father = (_roulette_select_one(populationWithFitness, fitness_sum),
-                          _roulette_select_one(populationWithFitness, fitness_sum))
-        pairs.append((mother, father))
+def roulette_selection(population_with_fitness: PopulationWithFitness, pair_number: int) -> List[Tuple[int, int]]:
+    fitness_sum = sum(individual[0] for individual in population_with_fitness)
+    pairs = [(_roulette_select_one(population_with_fitness, fitness_sum),
+              _roulette_select_one(population_with_fitness, fitness_sum)) for _ in range(pair_number)]
 
     return pairs

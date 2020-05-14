@@ -85,7 +85,7 @@ class Algorithm:
                 population]
 
     def _selection(self, population_with_fitness: PopulationWithFitness) -> List[Tuple[int, int]]:
-        return [(0, 0) for _ in range(len(population_with_fitness))]
+        return self.selection_algorithm(population_with_fitness, len(population_with_fitness))
 
     def _cross(self, mother: np.ndarray, father: np.ndarray) -> np.ndarray:
         loci = sorted(random_features_indices(self.loci_count - 1))
