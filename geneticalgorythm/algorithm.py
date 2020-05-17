@@ -53,9 +53,9 @@ def set_representation_of_features(individual: np.ndarray) -> Set[int]:
 class Algorithm:
     ALL_ATTRIBUTES_COUNT = 100_000
 
-    def __init__(self, classifier, *, population_size=1000, min_attributes_count=10,
+    def __init__(self, classifier, *, population_size=1500, min_attributes_count=10,
                  initial_attributes_standard_deviation=1, individuals_to_mutate_coefficient=0.015,
-                 chromosomes_to_mutate_coefficient=0.005, cycles_count=10, loci_count=2,
+                 chromosomes_to_mutate_coefficient=0.005, cycles_count=100, loci_count=2,
                  fitness_function=FitnessFunction.AveragePrecision, selection_algorithm=SelectionAlgorithm.Roulette):
         self.selection_algorithm = SelectionAlgorithmDictionary[selection_algorithm]
         self.loci_count = loci_count if loci_count % 2 == 0 else loci_count + 1
@@ -73,6 +73,7 @@ class Algorithm:
         self.best_individual_filename = f"{file_name_prefix}_best_individual.data"
         self.mean_filename = f"{file_name_prefix}_mean.data"
         self.mean_attributes_filename = f"{file_name_prefix}_mean_attributes.data"
+        self.result_filename = f"{file_name_prefix}_result.data"
 
     def _generate_single_individual(self) -> np.ndarray:
         features_count = int(np.random.normal(
@@ -143,7 +144,13 @@ class Algorithm:
             self._report(i, best_previous_individual, population_with_fitness)
 
         gc.collect()
-        return self._fittest(population)
+        fittest = self._fittest(population)
+        with open(self.result_filename, "w") as file:
+            file.write(f"score: {(fittest[0])} \n")
+            for attr in fittest[1]:
+                file.write(f"{attr} ")
+            file.write("\n")
+        return fittest
 
     def _report(self, epoch: int, best_individual: IndividualWithFitness,
                 population_with_fitness: PopulationWithFitness):
