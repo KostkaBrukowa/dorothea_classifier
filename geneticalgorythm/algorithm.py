@@ -53,7 +53,7 @@ def set_representation_of_features(individual: np.ndarray) -> Set[int]:
 class Algorithm:
     ALL_ATTRIBUTES_COUNT = 100_000
 
-    def __init__(self, classifier, *, population_size=1500, min_attributes_count=10,
+    def __init__(self, classifier, *, population_size=700, min_attributes_count=10,
                  initial_attributes_standard_deviation=1, individuals_to_mutate_coefficient=0.015,
                  chromosomes_to_mutate_coefficient=0.005, cycles_count=100, loci_count=2,
                  fitness_function=FitnessFunction.AveragePrecision, selection_algorithm=SelectionAlgorithm.Roulette):
@@ -132,6 +132,7 @@ class Algorithm:
     def run(self):
         self._clear_previous_results()
         population = self._generate_initial_population()
+        all_best = []
         for i in range(self.cycles_count):
             gc.collect()
             population_with_fitness = self._compute_fitness(population)
@@ -142,15 +143,23 @@ class Algorithm:
             population = [best_previous_individual[1]] + new_population[:-1]
 
             self._report(i, best_previous_individual, population_with_fitness)
+            self._save_result_to_file(best_previous_individual)
+            all_best.append(best_previous_individual[0])
+
+            if len(all_best) > 11 and all_best[-1] == all_best[-10]:
+                break
 
         gc.collect()
         fittest = self._fittest(population)
+        self._save_result_to_file(fittest)
+        return fittest
+
+    def _save_result_to_file(self, fittest):
         with open(self.result_filename, "w") as file:
             file.write(f"score: {(fittest[0])} \n")
             for attr in fittest[1]:
                 file.write(f"{attr} ")
             file.write("\n")
-        return fittest
 
     def _report(self, epoch: int, best_individual: IndividualWithFitness,
                 population_with_fitness: PopulationWithFitness):
@@ -169,6 +178,7 @@ class Algorithm:
         print('best individual', best_individual[0])
         print('mean', mean)
         print("mean attrs", mean_attributes_count)
+        print("best attrs", sum(best_individual[1]))
 
     def _clear_previous_results(self):
         data = (f"population {self.population_size} " +
