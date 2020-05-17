@@ -3,14 +3,16 @@ from typing import Set, List, Tuple
 import numpy as np
 import random
 import itertools
+import statistics
 from enum import Enum
 
 from selection.ranking_selection import ranking_selection
 from selection.roulette_selection import roulette_selection
 from selection.tournament_selection import tournament_selection
 
+IndividualWithFitness = Tuple[float, np.ndarray]
 Population = List[np.ndarray]
-PopulationWithFitness = List[Tuple[float, np.ndarray]]
+PopulationWithFitness = List[IndividualWithFitness]
 
 
 class SelectionAlgorithm(Enum):
@@ -51,9 +53,9 @@ def set_representation_of_features(individual: np.ndarray) -> Set[int]:
 class Algorithm:
     ALL_ATTRIBUTES_COUNT = 100_000
 
-    def __init__(self, classifier, *, population_size=10, min_attributes_count=10,
+    def __init__(self, classifier, *, population_size=5, min_attributes_count=10,
                  initial_attributes_standard_deviation=1, individuals_to_mutate_coefficient=0.015,
-                 chromosomes_to_mutate_coefficient=0.005, cycles_count=2, loci_count=2,
+                 chromosomes_to_mutate_coefficient=0.005, cycles_count=20, loci_count=2,
                  fitness_function=FitnessFunction.AveragePrecision, selection_algorithm=SelectionAlgorithm.Roulette):
         self.selection_algorithm = SelectionAlgorithmDictionary[selection_algorithm]
         self.loci_count = loci_count if loci_count % 2 == 0 else loci_count + 1
@@ -67,6 +69,10 @@ class Algorithm:
         self.fitness_function = (self.classifier.calculate_precision_recall
                                  if fitness_function == FitnessFunction.AveragePrecision
                                  else self.classifier.calculate_area_under_roc)
+        file_name_prefix = f"{selection_algorithm}_{fitness_function}"
+        self.best_individual_filename = f"{file_name_prefix}_best_individual.data"
+        self.mean_filename = f"{file_name_prefix}_mean.data"
+        self.mean_attributes_filename = f"{file_name_prefix}_mean_attributes.data"
 
     def _generate_single_individual(self) -> np.ndarray:
         features_count = int(np.random.normal(
@@ -119,16 +125,56 @@ class Algorithm:
 
         return population
 
-    def _fittest(self, population):
+    def _fittest(self, population: Population):
         return max(sorted(self._compute_fitness(population), key=lambda x: x[0]), key=lambda x: x[0])
 
     def run(self):
+        self._clear_previous_results()
         population = self._generate_initial_population()
         for i in range(self.cycles_count):
             population_with_fitness = self._compute_fitness(population)
             selected_pairs = self._selection(population_with_fitness)
             new_population = self._crossover(selected_pairs, population)
             self._mutation(new_population)
-            population = new_population
+            best_previous_individual = max(population_with_fitness, key=lambda x: x[0])
+            population = [best_previous_individual[1]] + new_population[:-1]
+
+            self._report(i, best_previous_individual, population_with_fitness)
 
         return self._fittest(population)
+
+    def _report(self, epoch: int, best_individual: IndividualWithFitness,
+                population_with_fitness: PopulationWithFitness):
+        mean = statistics.mean([individual[0] for individual in population_with_fitness])
+        population_attributes_counts = [sum(individual[1]) for individual in population_with_fitness]
+        mean_attributes_count = statistics.mean(population_attributes_counts)
+
+        with open(self.best_individual_filename, "a") as file:
+            file.write(f"{epoch} {best_individual[0]}\n")
+        with open(self.mean_filename, "a") as file:
+            file.write(f"{epoch} {mean}\n")
+        with open(self.mean_attributes_filename, "a") as file:
+            file.write(f"{epoch} {mean_attributes_count}\n")
+
+        print(epoch)
+        print('best individual', best_individual[0])
+        print('mean', mean)
+        print("mean attrs", mean_attributes_count)
+
+    def _clear_previous_results(self):
+        data = (f"population {self.population_size} " +
+                f"loci {self.loci_count} " +
+                f"chromosomes_to_mutate " +
+                f"{self.chromosomes_to_mutate_coefficient} " +
+                f"individuals_mutate {self.individuals_to_mutate_coefficient}" +
+                f" initial_attributes_standard_devieation {self.initial_attributes_standard_deviation}" +
+                f" min_attributes {self.min_attributes_count}\n")
+
+        with open(self.best_individual_filename, "w") as file:
+            file.write(data)
+
+        with open(self.mean_filename, "w") as file:
+            file.write(data)
+
+        with open(self.mean_attributes_filename, "w") as file:
+            file.write(data)

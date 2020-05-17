@@ -11,9 +11,9 @@ def _tournament_select_one(population_with_fitness: PopulationWithFitness, size:
     better, worse = (max(pair), min(pair))
 
     if random() < WIN_PROBABILITY:
-        return population_with_fitness.index(better)
+        return better
     else:
-        return population_with_fitness.index(worse)
+        return worse
 
 
 def tournament_selection(population_with_fitness: PopulationWithFitness, pair_number: int) -> List[Tuple[int, int]]:

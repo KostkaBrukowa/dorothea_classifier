@@ -1,8 +1,35 @@
-import random
+import sys
 
 from data.data_reader import DataReader
 from classifier.classifier import Classifier
-from geneticalgorythm.algorithm import Algorithm
+from geneticalgorythm.algorithm import Algorithm, SelectionAlgorithm, FitnessFunction
+
+
+def get_selection():
+    selection = sys.argv[1]
+    if selection == 'selection1':
+        selection = SelectionAlgorithm.Ranking
+    elif selection == 'selection2':
+        selection = SelectionAlgorithm.Roulette
+    elif selection == 'selection3':
+        selection = SelectionAlgorithm.Tournament
+    else:
+        raise RuntimeError("Wrong selection alorithm in program arguments")
+
+    return selection
+
+
+def get_fitness():
+    fitness = sys.argv[2]
+    if fitness == 'fitness1':
+        fitness = FitnessFunction.ROCCurve
+    elif fitness == 'fitness2':
+        fitness = FitnessFunction.AveragePrecision
+    else:
+        raise RuntimeError("Wrong fitness alorithm in program arguments")
+
+    return fitness
+
 
 if __name__ == '__main__':
     # Reading
@@ -12,6 +39,10 @@ if __name__ == '__main__':
 
     # Classification
     classifier = Classifier(train_compounds, validation_compounds)
-    algorithm = Algorithm(classifier)
+    for fitness in FitnessFunction:
+        for selection in SelectionAlgorithm:
+            print(fitness, selection)
+            algorithm = Algorithm(classifier, fitness_function=fitness, selection_algorithm=selection)
 
-    print(algorithm.run())
+            print(algorithm.run())
+
