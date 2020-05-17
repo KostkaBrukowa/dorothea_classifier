@@ -7,8 +7,12 @@ WIN_PROBABILITY = 0.7
 
 
 def _tournament_select_one(population_with_fitness: PopulationWithFitness, size: int) -> int:
-    pair = (randrange(0, size), randrange(0, size))
-    better, worse = (max(pair), min(pair))
+    first_index = randrange(0, size)
+    second_index = randrange(0, size)
+
+    better = first_index if population_with_fitness[first_index][0] > population_with_fitness[second_index][0]\
+        else second_index
+    worse = first_index if better == second_index else second_index
 
     if random() < WIN_PROBABILITY:
         return better
