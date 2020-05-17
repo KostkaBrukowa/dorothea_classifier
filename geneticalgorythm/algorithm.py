@@ -1,10 +1,10 @@
 from typing import Set, List, Tuple
 
 import numpy as np
+import gc
 import random
 import itertools
 import statistics
-from enum import Enum
 
 from selection.ranking_selection import ranking_selection
 from selection.roulette_selection import roulette_selection
@@ -15,15 +15,15 @@ Population = List[np.ndarray]
 PopulationWithFitness = List[IndividualWithFitness]
 
 
-class SelectionAlgorithm(Enum):
-    Ranking = 1
-    Roulette = 2
-    Tournament = 3
+class SelectionAlgorithm():
+    Ranking = 'Selection_Ranking'
+    Roulette = 'Selection_Roulette'
+    Tournament = 'Selection_Tournament'
 
 
-class FitnessFunction(Enum):
-    AveragePrecision = 1
-    ROCCurve = 2
+class FitnessFunction():
+    AveragePrecision = 'Fitness_precision'
+    ROCCurve = 'Fitness_ROC'
 
 
 SelectionAlgorithmDictionary = {
@@ -53,9 +53,9 @@ def set_representation_of_features(individual: np.ndarray) -> Set[int]:
 class Algorithm:
     ALL_ATTRIBUTES_COUNT = 100_000
 
-    def __init__(self, classifier, *, population_size=5, min_attributes_count=10,
+    def __init__(self, classifier, *, population_size=1000, min_attributes_count=10,
                  initial_attributes_standard_deviation=1, individuals_to_mutate_coefficient=0.015,
-                 chromosomes_to_mutate_coefficient=0.005, cycles_count=20, loci_count=2,
+                 chromosomes_to_mutate_coefficient=0.005, cycles_count=10, loci_count=2,
                  fitness_function=FitnessFunction.AveragePrecision, selection_algorithm=SelectionAlgorithm.Roulette):
         self.selection_algorithm = SelectionAlgorithmDictionary[selection_algorithm]
         self.loci_count = loci_count if loci_count % 2 == 0 else loci_count + 1
@@ -132,6 +132,7 @@ class Algorithm:
         self._clear_previous_results()
         population = self._generate_initial_population()
         for i in range(self.cycles_count):
+            gc.collect()
             population_with_fitness = self._compute_fitness(population)
             selected_pairs = self._selection(population_with_fitness)
             new_population = self._crossover(selected_pairs, population)
@@ -141,6 +142,7 @@ class Algorithm:
 
             self._report(i, best_previous_individual, population_with_fitness)
 
+        gc.collect()
         return self._fittest(population)
 
     def _report(self, epoch: int, best_individual: IndividualWithFitness,
