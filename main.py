@@ -1,47 +1,66 @@
 import sys
 
+import numpy as np
+import matplotlib.pyplot as plt
+
 from data.data_reader import DataReader
 from classifier.classifier import Classifier
 from geneticalgorythm.algorithm import Algorithm, SelectionAlgorithm, FitnessFunction
 
 
-def get_selection():
-    selection = sys.argv[1]
-    if selection == 'selection1':
-        selection = SelectionAlgorithm.Ranking
-    elif selection == 'selection2':
-        selection = SelectionAlgorithm.Roulette
-    elif selection == 'selection3':
-        selection = SelectionAlgorithm.Tournament
-    else:
-        raise RuntimeError("Wrong selection alorithm in program arguments")
+def read_values(path):
+    with open(f"{path}.data", 'r') as file:
+        data = file.readlines()
+        results = []
+        for result in data[1:]:
+            generation, value = result.split(' ')
+            results.append((int(generation), float(value)))
 
-    return selection
+        return results
 
 
-def get_fitness():
-    fitness = sys.argv[2]
-    if fitness == 'fitness1':
-        fitness = FitnessFunction.ROCCurve
-    elif fitness == 'fitness2':
-        fitness = FitnessFunction.AveragePrecision
-    else:
-        raise RuntimeError("Wrong fitness alorithm in program arguments")
+def plot_values(data, title, ylabel):
+    x1 = [x[0] for x in data]
+    y1 = [x[1] for x in data]
 
-    return fitness
+    plt.plot(x1, y1, 'o-')
+    plt.title(title)
+    plt.xlabel('Generation number')
+    plt.ylabel(ylabel)
+    plt.xlim((0, 100))
+    plt.ylim((0.3, 1.1))
+
+    plt.show()
+
+
+def plot_type(selection, fitness):
+    file_name_prefix = f"{selection}_{fitness}"
+    best_individuals = read_best_individuals(file_name_prefix)
+    mean = read_mean(file_name_prefix)
+    mean_attributes = read_mean_attributes(file_name_prefix)
+
+    plot_values(best_individuals, f'Best individual score by generation. {file_name_prefix}', 'Best individual score')
+    # plot_values(mean, f'Population mean score by generation. {file_name_prefix}', 'Population mean')
+    # plot_values(mean_attributes, f'Mean attributes count by generation. {file_name_prefix}', 'Mean attributes count')
+
+
+def read_best_individuals(path):
+    return read_values(f"{path}_best_individual")
+
+
+def read_mean(path):
+    return read_values(f"{path}_mean")
+
+
+def read_mean_attributes(path):
+    return read_values(f"{path}_mean_attributes")
+
+
+# def read_best_individual(path):
 
 
 if __name__ == '__main__':
     # Reading
-    data_reader = DataReader()
-    train_compounds = data_reader.read_train_data()
-    validation_compounds = data_reader.read_valid_data()
-
-    # Classification
-    classifier = Classifier(train_compounds, validation_compounds)
     for fitness in [FitnessFunction.AveragePrecision, FitnessFunction.ROCCurve]:
         for selection in [SelectionAlgorithm.Tournament, SelectionAlgorithm.Roulette, SelectionAlgorithm.Ranking]:
-            print(fitness, selection)
-            algorithm = Algorithm(classifier, fitness_function=fitness, selection_algorithm=selection)
-
-            print(algorithm.run())
+            plot_type(selection, fitness)
