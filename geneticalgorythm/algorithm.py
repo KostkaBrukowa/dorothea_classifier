@@ -53,7 +53,7 @@ def set_representation_of_features(individual: np.ndarray) -> Set[int]:
 class Algorithm:
     ALL_ATTRIBUTES_COUNT = 100_000
 
-    def __init__(self, classifier, *, population_size=700, min_attributes_count=10,
+    def __init__(self, classifier, *, population_size=100, min_attributes_count=10,
                  initial_attributes_standard_deviation=1, individuals_to_mutate_coefficient=0.015,
                  chromosomes_to_mutate_coefficient=0.005, cycles_count=100, loci_count=2,
                  fitness_function=FitnessFunction.AveragePrecision, selection_algorithm=SelectionAlgorithm.Roulette):
@@ -168,13 +168,13 @@ class Algorithm:
         mean_attributes_count = statistics.mean(population_attributes_counts)
 
         with open(self.best_individual_filename, "a") as file:
-            file.write(f"{epoch} {best_individual[0]}\n")
+            file.write(f"{epoch} {best_individual[0]} {sum(best_individual[1])}\n")
         with open(self.mean_filename, "a") as file:
             file.write(f"{epoch} {mean}\n")
         with open(self.mean_attributes_filename, "a") as file:
             file.write(f"{epoch} {mean_attributes_count}\n")
 
-        print(epoch)
+        print(f"Area under ROC curve: {epoch}")
         print('best individual', best_individual[0])
         print('mean', mean)
         print("mean attrs", mean_attributes_count)

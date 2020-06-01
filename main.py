@@ -39,8 +39,8 @@ if __name__ == '__main__':
 
     # Classification
     classifier = Classifier(train_compounds, validation_compounds)
-    for fitness in [FitnessFunction.AveragePrecision, FitnessFunction.ROCCurve]:
-        for selection in [SelectionAlgorithm.Tournament, SelectionAlgorithm.Roulette, SelectionAlgorithm.Ranking]:
+    for fitness in [FitnessFunction.ROCCurve]:
+        for selection in [SelectionAlgorithm.Ranking]:
             print(fitness, selection)
             algorithm = Algorithm(classifier, fitness_function=fitness, selection_algorithm=selection)
 
