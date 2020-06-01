@@ -31,7 +31,7 @@ def plot_values(data, title, lineLabel, ylabel):
     if y1[0] >= 1:
         plt.ylim((1, 1200))  # for mean attributes
     else:
-        plt.ylim((0.3, 1.1)) # for rest
+        plt.ylim((0.3, 1.1))  # for rest
 
 
 def plot_type_best(selection, population):
@@ -68,29 +68,33 @@ def read_mean_attributes(path):
     return read_values(f"{path}_mean_attributes")
 
 
-# def read_best_individual(path):
+
+
+def plot_best_one():
+    file_name_prefix = f"Population {population}/{selection}_Fitness_precision_result"
+
+    best_result = None
+    with open(f"{file_name_prefix}.data", 'r') as file:
+        data = file.readlines()
+        best_result = float(data[0].split(':')[1])
+        # print(sum([int(x) for x in data[1].replace('\n', '0').split(' ')]))
+
+    return f"{population} {selection.split('_')[1]}", best_result
 
 
 if __name__ == '__main__':
     # Reading
+    data = []
     for population in [100, 700]:
         for selection in [SelectionAlgorithm.Tournament, SelectionAlgorithm.Roulette, SelectionAlgorithm.Ranking]:
-            plot_type_best(selection, population)
+            best_one = plot_best_one()
+            data.append(best_one)
+            # data[best_one[0]] = best_one[1]
 
+    plt.ylim(0.5, 1)
+    plt.bar([x[0] for x in data], [x[1] for x in data])
+    plt.xticks(rotation='45')
+    plt.show()
     plt.legend()
     plt.savefig(f"combined/best")
-    plt.show()
-    for population in [100, 700]:
-        for selection in [SelectionAlgorithm.Tournament, SelectionAlgorithm.Roulette, SelectionAlgorithm.Ranking]:
-            plot_type_mean(selection, population)
-
-    plt.legend()
-    plt.savefig(f"combined/mean")
-    plt.show()
-
-    for population in [100, 700]:
-        for selection in [SelectionAlgorithm.Tournament, SelectionAlgorithm.Roulette, SelectionAlgorithm.Ranking]:
-            plot_type_attrs(selection, population)
-    plt.legend()
-    plt.savefig(f"combined/mean_attrs")
     plt.show()
