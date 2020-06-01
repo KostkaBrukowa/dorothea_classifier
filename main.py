@@ -13,8 +13,8 @@ def read_values(path):
         data = file.readlines()
         results = []
         for result in data[1:]:
-            generation, value = result.split(' ')
-            results.append((int(generation), float(value)))
+            values = result.split(' ')
+            results.append((int(values[0]), float(values[1])))
 
         return results
 
@@ -29,19 +29,27 @@ def plot_values(data, title, ylabel):
     plt.ylabel(ylabel)
     plt.xlim((0, 100))
     plt.ylim((0.3, 1.1))
+    # plt.ylim((1, 1200)) for mean attributes
 
-    plt.show()
 
 
-def plot_type(selection, fitness):
-    file_name_prefix = f"{selection}_{fitness}"
+def plot_type(selection, population):
+    file_name_prefix = f"Population {population}/{selection}_Fitness_precision"
     best_individuals = read_best_individuals(file_name_prefix)
     mean = read_mean(file_name_prefix)
     mean_attributes = read_mean_attributes(file_name_prefix)
 
-    plot_values(best_individuals, f'Best individual score by generation. {file_name_prefix}', 'Best individual score')
-    # plot_values(mean, f'Population mean score by generation. {file_name_prefix}', 'Population mean')
-    # plot_values(mean_attributes, f'Mean attributes count by generation. {file_name_prefix}', 'Mean attributes count')
+    plot_values(best_individuals, f'Best individual score by generation.\n {file_name_prefix}', 'Best individual score')
+    plt.savefig(f"best_images/Population{population}/{selection}")
+    plt.show()
+
+    plot_values(mean, f'Population mean score by generation.\n {file_name_prefix}', 'Population mean')
+    plt.savefig(f"mean_images/Population{population}/{selection}")
+    plt.show()
+
+    plot_values(mean_attributes, f'Mean attributes count by generation.\n {file_name_prefix}', 'Mean attributes count')
+    plt.savefig(f"attrs_images/Population{population}/{selection}")
+    plt.show()
 
 
 def read_best_individuals(path):
@@ -61,6 +69,6 @@ def read_mean_attributes(path):
 
 if __name__ == '__main__':
     # Reading
-    for fitness in [FitnessFunction.AveragePrecision, FitnessFunction.ROCCurve]:
+    for population in [100, 700]:
         for selection in [SelectionAlgorithm.Tournament, SelectionAlgorithm.Roulette, SelectionAlgorithm.Ranking]:
-            plot_type(selection, fitness)
+            plot_type(selection, population)
