@@ -6,15 +6,15 @@ PopulationWithFitness = List[Tuple[float, np.ndarray]]
 
 
 def _ranks_with_indexes(population_with_fitness: PopulationWithFitness) -> List[Tuple[int, int]]:
-    sorted_population = sorted(
-        population_with_fitness, key=lambda ind: ind[0])
+    sorted_population_with_indices = sorted(
+        enumerate(population_with_fitness), key=lambda ind: ind[1][0])
     rank = 1
-    previous_individual = sorted_population[0]
-    ranks_indexes = [(rank, population_with_fitness.index(previous_individual))]
-    for individual in sorted_population[1:]:
-        if individual[0] > previous_individual[0]:
+    previous_individual = sorted_population_with_indices[0]
+    ranks_indexes = [(rank, previous_individual[0])]
+    for individual in sorted_population_with_indices[1:]:
+        if individual[1][0] > previous_individual[1][0]:
             rank += 1
-        ranks_indexes.append((rank, population_with_fitness.index(individual)))
+        ranks_indexes.append((rank, individual[0]))
 
     return ranks_indexes
 
