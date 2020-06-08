@@ -6,6 +6,7 @@ import random
 import itertools
 import statistics
 
+from classifier.classifier import Classifier
 from selection.ranking_selection import ranking_selection
 from selection.roulette_selection import roulette_selection
 from selection.tournament_selection import tournament_selection
@@ -46,17 +47,19 @@ def binary_representation_of_features(features: Set[int]) -> np.ndarray:
     return binary_representation
 
 
-def set_representation_of_features(individual: np.ndarray) -> Set[int]:
-    return {index for index, value in enumerate(individual) if value == 1}
+def set_representation_of_features(individual: np.ndarray) -> List[int]:
+    return [index for index, value in enumerate(individual) if value == 1]
 
 
 class Algorithm:
     ALL_ATTRIBUTES_COUNT = 100_000
 
-    def __init__(self, classifier, *, population_size=100, min_attributes_count=10,
+    def __init__(self, classifier, *, population_size=50, min_attributes_count=10,
                  initial_attributes_standard_deviation=1, individuals_to_mutate_coefficient=0.015,
                  chromosomes_to_mutate_coefficient=0.005, cycles_count=100, loci_count=2,
-                 fitness_function=FitnessFunction.AveragePrecision, selection_algorithm=SelectionAlgorithm.Roulette):
+                 fitness_function=FitnessFunction.AveragePrecision, selection_algorithm=SelectionAlgorithm.Roulette,
+                 overfit_test_classifier: Classifier = None):
+        self.overfit_test_classifier = overfit_test_classifier
         self.selection_algorithm = SelectionAlgorithmDictionary[selection_algorithm]
         self.loci_count = loci_count if loci_count % 2 == 0 else loci_count + 1
         self.cycles_count = cycles_count
@@ -166,9 +169,11 @@ class Algorithm:
         mean = statistics.mean([individual[0] for individual in population_with_fitness])
         population_attributes_counts = [sum(individual[1]) for individual in population_with_fitness]
         mean_attributes_count = statistics.mean(population_attributes_counts)
+        overfit_test = self.overfit_test_classifier.calculate_precision_recall(
+                  set_representation_of_features(best_individual[1]))
 
         with open(self.best_individual_filename, "a") as file:
-            file.write(f"{epoch} {best_individual[0]} {sum(best_individual[1])}\n")
+            file.write(f"{epoch} {best_individual[0]} {sum(best_individual[1])} {overfit_test}\n")
         with open(self.mean_filename, "a") as file:
             file.write(f"{epoch} {mean}\n")
         with open(self.mean_attributes_filename, "a") as file:
@@ -176,6 +181,7 @@ class Algorithm:
 
         print(f"Area under ROC curve: {epoch}")
         print('best individual', best_individual[0])
+        print("best overfitting test", overfit_test)
         print('mean', mean)
         print("mean attrs", mean_attributes_count)
         print("best attrs", sum(best_individual[1]))

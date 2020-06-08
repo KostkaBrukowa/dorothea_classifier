@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Set
 
 import numpy as np
 from sklearn.linear_model import LogisticRegression
